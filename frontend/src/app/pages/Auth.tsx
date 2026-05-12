@@ -16,6 +16,7 @@ export function Auth() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
+  const [emailError, setEmailError] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -27,10 +28,37 @@ export function Auth() {
   const navigate = useNavigate();
   const { login, signup, loginWithGoogle, resetPassword } = useAuth();
 
+  const validateEmail = (email: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+  const passwordRequirements = {
+    minLength: formData.password.length >= 8,
+    hasUpperCase: /[A-Z]/.test(formData.password),
+    hasDigit: /[0-9]/.test(formData.password),
+    hasSpecial: /[^A-Za-z0-9]/.test(formData.password),
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setPasswordError(false);
+    setEmailError('');
+
+    if (!validateEmail(formData.email)) {
+      setEmailError('Please enter a valid email address');
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (!isLogin) {
+      const { minLength, hasUpperCase, hasDigit, hasSpecial } = passwordRequirements;
+      if (!minLength || !hasUpperCase || !hasDigit || !hasSpecial) {
+        toast.error('Password does not meet the requirements');
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
     try {
       if (isLogin) {
         await login(formData.email, formData.password);
@@ -232,17 +260,34 @@ export function Auth() {
                 >
                   <Label htmlFor="email">Email</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                    <Mail className={`absolute left-3 top-3 w-5 h-5 ${emailError ? 'text-red-500' : 'text-gray-400'}`} />
                     <Input
                       id="email"
                       type="email"
                       placeholder="you@example.com"
                       value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="pl-10"
+                      onChange={(e) => {
+                        setFormData({ ...formData, email: e.target.value });
+                        if (emailError) setEmailError('');
+                      }}
+                      onBlur={(e) => {
+                        if (e.target.value && !validateEmail(e.target.value)) {
+                          setEmailError('Please enter a valid email address');
+                        }
+                      }}
+                      className={`pl-10 ${emailError ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
                       required
                     />
                   </div>
+                  {emailError && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-xs text-red-500 font-medium"
+                    >
+                      ✗ {emailError}
+                    </motion.p>
+                  )}
                 </motion.div>
 
                 <motion.div
@@ -296,6 +341,21 @@ export function Auth() {
                     >
                       ✗ Invalid email or password
                     </motion.p>
+                  )}
+                  {!isLogin && (
+                    <div className="space-y-1 pt-1">
+                      {[
+                        { met: passwordRequirements.minLength, label: 'At least 8 characters' },
+                        { met: passwordRequirements.hasUpperCase, label: 'One uppercase letter (A-Z)' },
+                        { met: passwordRequirements.hasDigit, label: 'One digit (0–9)' },
+                        { met: passwordRequirements.hasSpecial, label: 'One special character (!@#$…)' },
+                      ].map(({ met, label }) => (
+                        <p key={label} className={`flex items-center gap-1 text-xs ${met ? 'text-green-600' : 'text-gray-400'}`}>
+                          <span className="font-bold">{met ? '✓' : '○'}</span>
+                          {label}
+                        </p>
+                      ))}
+                    </div>
                   )}
                 </motion.div>
 
@@ -398,7 +458,7 @@ export function Auth() {
                   {isLogin ? "Don't have an account? " : "Already have an account? "}
                   <button
                     type="button"
-                    onClick={() => { setIsLogin(!isLogin); setPasswordError(false); }}
+                    onClick={() => { setIsLogin(!isLogin); setPasswordError(false); setEmailError(''); }}
                     className="text-blue-600 hover:underline font-medium"
                   >
                     {isLogin ? 'Sign up' : 'Sign in'}

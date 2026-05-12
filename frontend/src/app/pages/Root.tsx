@@ -29,6 +29,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '../components/ui/dropdown-menu';
 
 export function Root() {
   const location = useLocation();
@@ -44,7 +51,7 @@ export function Root() {
 
   const navigation = [
     { name: 'Home', path: '/', icon: Home },
-    { name: 'AI Dictionary', path: '/dictionary', icon: BookOpen },
+    { name: 'AI Chatbot', path: '/dictionary', icon: BookOpen },
     { name: 'Sign to Text', path: '/sign-to-text', icon: Camera },
     { name: 'Voice to Text', path: '/voice-to-text', icon: Mic },
     { name: 'Video Call', path: '/video-call', icon: Video },
@@ -110,20 +117,29 @@ export function Root() {
               <div className="hidden md:flex items-center gap-2">
                 {user ? (
                   <>
-                    <Link to="/profile">
-                      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                        <Button variant="outline" size="sm" className="bg-gradient-to-r from-blue-400 to-purple-400 text-white border-0 hover:opacity-90">
-                          <User className="w-4 h-4 mr-2" />
-                          {user.email?.split('@')[0] ?? 'Profile'}
-                        </Button>
-                      </motion.div>
-                    </Link>
-                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                      <Button variant="outline" size="sm" onClick={handleLogout} className="border-gray-300 text-gray-600 hover:bg-gray-100">
-                        <LogOut className="w-4 h-4 mr-1" />
-                        Logout
-                      </Button>
-                    </motion.div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                          <Button variant="outline" size="sm" className="bg-gradient-to-r from-blue-400 to-purple-400 text-white border-0 hover:opacity-90">
+                            <User className="w-4 h-4 mr-2" />
+                            {user.email?.split('@')[0] ?? 'Profile'}
+                          </Button>
+                        </motion.div>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-44">
+                        <DropdownMenuItem asChild>
+                          <Link to="/profile" className="flex items-center gap-2 cursor-pointer">
+                            <User className="w-4 h-4" />
+                            View Profile
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-2 text-red-600 focus:text-red-600 cursor-pointer">
+                          <LogOut className="w-4 h-4" />
+                          Log Out
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </>
                 ) : (
                   <>

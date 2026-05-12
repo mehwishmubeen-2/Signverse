@@ -39,7 +39,7 @@ export function Home() {
   const features = [
     {
       icon: Bot,
-      title: 'AI Dictionary Chatbot',
+      title: 'AI Chatbot',
       description: 'Ask our AI chatbot for any sign and get instant video demonstrations',
       path: '/dictionary',
       gradient: 'from-blue-400 to-cyan-400'

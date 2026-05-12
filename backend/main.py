@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.Chatbot import router as chatbot_router
 
-from app.api import auth, signs, voice
+from app.api import auth
 
 app = FastAPI(title="SignVerse API", version="1.0.0")
 
@@ -20,8 +20,6 @@ app.add_middleware(
 )
 
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
-app.include_router(signs.router, prefix="/api/signs", tags=["signs"])
-app.include_router(voice.router, prefix="/api/voice", tags=["voice"])
 app.include_router(chatbot_router, prefix="/chatbot", tags=["chatbot"])  # ← ADD THIS
 
 

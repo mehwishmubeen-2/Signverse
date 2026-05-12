@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion } from 'motion/react';
-import { Camera, StopCircle, Sparkles } from 'lucide-react';
+import { Camera, StopCircle, Sparkles, Volume2, Copy, Trash2, Delete, Plus, Hand, Zap } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
@@ -375,167 +375,222 @@ export function SignToText() {
 
       <div className="relative z-10 max-w-6xl mx-auto space-y-6 px-4 sm:px-0">
 
-        {/* Header */}
-        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="space-y-2">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-            Sign to Text Translation
-          </h1>
+        {/* ── Header ── */}
+        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="space-y-1">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
+              <Hand className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                Sign to Text
+              </h1>
+              <p className="text-sm text-gray-500">Real-time ASL recognition powered by AI</p>
+            </div>
+          </div>
         </motion.div>
 
-        {/* Main two-column layout */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="space-y-6">
-
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-            {/* ── LEFT ── */}
+            {/* ── LEFT — Camera ── */}
             <div className="flex flex-col gap-4">
-              <Card className="shadow-lg hover:shadow-xl transition-shadow">
-                <CardContent className="p-3 space-y-3">
+              <Card className="shadow-xl border border-white/60 bg-white/90 backdrop-blur-sm overflow-hidden">
+                <div className="px-5 pt-5 pb-0 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Camera className="w-4 h-4 text-blue-600" />
+                    <span className="text-sm font-semibold text-gray-700">Camera Feed</span>
+                  </div>
+                  {isRecording && (
+                    <motion.div className="flex items-center gap-1.5"
+                      animate={{ opacity: [1, 0.4, 1] }} transition={{ duration: 1.2, repeat: Infinity }}>
+                      <div className="w-2 h-2 rounded-full bg-red-500" />
+                      <span className="text-xs font-medium text-red-500">LIVE</span>
+                    </motion.div>
+                  )}
+                </div>
 
-                  {/* Video container */}
-                  <div className="relative rounded-lg overflow-hidden bg-blue-50 border border-blue-200">
-                    <video ref={videoRef} className="w-full block" style={{ transform: 'scaleX(-1)' }}
+                <CardContent className="p-4 space-y-4">
+                  {/* Video */}
+                  <div className="relative rounded-xl overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 aspect-video shadow-inner">
+                    <video ref={videoRef} className="w-full h-full object-cover block" style={{ transform: 'scaleX(-1)' }}
                       autoPlay playsInline muted />
                     <canvas ref={canvasRef} className="absolute inset-0 w-full h-full"
                       style={{ transform: 'scaleX(-1)' }} />
                     {!isRecording && (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="text-center text-blue-700">
-                          <motion.div animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
-                            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}>
-                            <Camera className="w-16 h-16 mx-auto mb-4 text-blue-400" />
-                          </motion.div>
-                          <p className="text-sm font-medium">Click Start to begin</p>
-                        </div>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-slate-900/80 backdrop-blur-sm">
+                        <motion.div animate={{ scale: [1, 1.08, 1] }} transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+                          className="w-16 h-16 rounded-full bg-blue-500/20 border-2 border-blue-400/40 flex items-center justify-center">
+                          <Camera className="w-7 h-7 text-blue-400" />
+                        </motion.div>
+                        <p className="text-sm text-slate-300 font-medium">Camera is off</p>
+                        <p className="text-xs text-slate-500">Press Start to begin recognition</p>
                       </div>
                     )}
-                    {isRecording && (
-                      <motion.div className="absolute top-3 left-3"
-                        animate={{ opacity: [1, 0.5, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>
-                        <Badge variant="destructive">● Recording</Badge>
-                      </motion.div>
-                    )}
                   </div>
 
-                  {/* Hold bar */}
-                  <div className="h-2.5 bg-gray-200 rounded-full overflow-hidden">
-                    <motion.div className="h-full rounded-full"
-                      style={{ background: holdPct >= 100 ? '#4ade80' : '#6366f1' }}
-                      animate={{ width: `${holdPct}%` }} transition={{ duration: 0.08 }} />
+                  {/* Hold progress */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Hold Progress</span>
+                      <span className="text-xs font-semibold text-purple-600">{Math.round(holdPct)}%</span>
+                    </div>
+                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden border border-gray-200">
+                      <motion.div className="h-full rounded-full"
+                        style={{ background: holdPct >= 100 ? 'linear-gradient(90deg,#4ade80,#22c55e)' : 'linear-gradient(90deg,#6366f1,#a855f7)' }}
+                        animate={{ width: `${holdPct}%` }} transition={{ duration: 0.08 }} />
+                    </div>
+                    <p className="text-xs text-gray-400">{holdStatus}</p>
                   </div>
-                  <p className="text-xs text-gray-500">{holdStatus}</p>
 
-                  {/* Prediction box */}
-                  <div className="flex items-center gap-4 bg-white border border-blue-200 rounded-xl px-4 py-3 shadow-sm">
-                    <span className="text-5xl font-bold min-w-[4rem] text-center leading-none"
-                      style={{ color: predColor }}>
-                      {predLabel}
-                    </span>
-                    <div className="flex-1 space-y-1.5">
-                      <p className="text-sm" style={{ color: predLabel === 'Space' ? '#ca8a04' : '#16a34a' }}>
-                        {labelName}
-                      </p>
-                      <div className="h-2 bg-blue-100 rounded-full overflow-hidden">
-                        <div className="h-full rounded-full transition-all duration-150"
-                          style={{ width: `${confPct}%`, background: confBarColor }} />
+                  {/* Prediction */}
+                  <div className="flex items-center gap-4 rounded-xl border border-gray-100 bg-gradient-to-r from-slate-50 to-white px-4 py-3 shadow-sm">
+                    <div className="flex flex-col items-center justify-center w-16 h-16 rounded-xl bg-white border-2 shadow-sm"
+                      style={{ borderColor: predColor + '55' }}>
+                      <span className="text-3xl font-bold leading-none" style={{ color: predColor }}>{predLabel}</span>
+                    </div>
+                    <div className="flex-1 space-y-2">
+                      <p className="text-sm font-medium text-gray-700">{labelName}</p>
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-gray-400">Confidence</span>
+                          <span className="text-xs font-semibold" style={{ color: confBarColor }}>{confPct}%</span>
+                        </div>
+                        <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                          <div className="h-full rounded-full transition-all duration-150"
+                            style={{ width: `${confPct}%`, background: confBarColor }} />
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Status */}
-                  <p className="text-center text-yellow-600 text-sm font-medium">{statusText}</p>
-
-                  {/* Start / Stop */}
-                  <div className="flex gap-2">
-                    {!isRecording ? (
-                      <motion.div className="flex-1" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                        <Button onClick={handleStartRecording}
-                          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-90">
-                          <Camera className="w-4 h-4 mr-2" /> Start Camera
-                        </Button>
-                      </motion.div>
-                    ) : (
-                      <motion.div className="flex-1" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                        <Button onClick={handleStopRecording} variant="destructive" className="w-full">
-                          <StopCircle className="w-4 h-4 mr-2" /> Stop
-                        </Button>
-                      </motion.div>
-                    )}
+                  {/* Status chip */}
+                  <div className="flex items-center justify-center gap-2 py-1.5 rounded-lg bg-amber-50 border border-amber-200">
+                    <Zap className="w-3.5 h-3.5 text-amber-500" />
+                    <p className="text-xs font-medium text-amber-700">{statusText}</p>
                   </div>
 
-                  {inferenceError && (
-                    <p className="text-xs text-red-400 bg-red-950 border border-red-800 rounded p-2">⚠ {inferenceError}</p>
+                  {/* Start / Stop */}
+                  {!isRecording ? (
+                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
+                      <Button onClick={handleStartRecording}
+                        className="w-full h-11 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-md shadow-blue-500/25 transition-all">
+                        <Camera className="w-4 h-4 mr-2" /> Start Recognition
+                      </Button>
+                    </motion.div>
+                  ) : (
+                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
+                      <Button onClick={handleStopRecording}
+                        className="w-full h-11 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-semibold shadow-md shadow-red-500/25 transition-all">
+                        <StopCircle className="w-4 h-4 mr-2" /> Stop Camera
+                      </Button>
+                    </motion.div>
                   )}
 
+                  {inferenceError && (
+                    <div className="flex items-start gap-2 rounded-lg bg-red-50 border border-red-200 px-3 py-2">
+                      <span className="text-red-500 text-sm">⚠</span>
+                      <p className="text-xs text-red-600">{inferenceError}</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
 
-            {/* ── RIGHT ── */}
+            {/* ── RIGHT — Communication Panel ── */}
             <div className="flex flex-col gap-4">
-              <Card className="shadow-lg hover:shadow-xl transition-shadow">
-                <CardHeader>
-                  <CardTitle className="text-base bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                    Communication Panel
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
+              <Card className="shadow-xl border border-white/60 bg-white/90 backdrop-blur-sm h-full">
+                <div className="px-5 pt-5 pb-0 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-purple-600" />
+                  <span className="text-sm font-semibold text-gray-700">Communication Panel</span>
+                </div>
+
+                <CardContent className="p-5 space-y-5">
 
                   {/* Current Word */}
-                  <div>
-                    <p className="text-xs uppercase tracking-widest text-gray-400 mb-1">Current Word</p>
-                    <div className="bg-white border border-blue-300 rounded-lg px-4 py-3 min-h-[56px] flex items-center shadow-sm">
-                      <span className="text-2xl font-bold tracking-[4px] text-purple-600">{currentWord}</span>
-                      <motion.span className="text-2xl text-blue-500"
-                        animate={{ opacity: [1, 0, 1] }}
-                        transition={{ duration: 1, repeat: Infinity, ease: 'steps(1)' }}>
-                        |
-                      </motion.span>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold uppercase tracking-widest text-gray-400">Current Word</span>
+                      <div className="flex gap-1.5">
+                        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                          onClick={deleteLetter}
+                          className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-colors">
+                          <Delete className="w-3 h-3" /> Backspace
+                        </motion.button>
+                        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                          onClick={clearWord}
+                          className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition-colors">
+                          <Trash2 className="w-3 h-3" /> Clear
+                        </motion.button>
+                      </div>
                     </div>
+                    <div className="flex items-center gap-1 rounded-xl border-2 border-purple-200 bg-purple-50/50 px-4 py-3 min-h-[60px] shadow-inner">
+                      <span className="text-2xl font-bold tracking-[6px] text-purple-700 font-mono">
+                        {currentWord || <span className="text-purple-300 tracking-normal font-sans text-base font-normal italic">Spell a word...</span>}
+                      </span>
+                      <motion.span className="text-2xl text-purple-400 ml-0.5"
+                        animate={{ opacity: [1, 0, 1] }}
+                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>|</motion.span>
+                    </div>
+                    <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
+                      onClick={addSpace}
+                      className="w-full flex items-center justify-center gap-2 h-9 rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white text-sm font-semibold shadow shadow-green-500/20 transition-all">
+                      <Plus className="w-4 h-4" /> Confirm Word
+                    </motion.button>
                   </div>
 
-                  {/* Word buttons */}
-                  <div className="flex gap-2 flex-wrap">
-                    <Button size="sm" variant="outline"
-                      className="border-yellow-500 text-yellow-600 hover:bg-yellow-50"
-                      onClick={deleteLetter}>
-                       Delete Letter
-                    </Button>
-                    <Button size="sm" variant="outline"
-                      className="border-green-500 text-green-600 hover:bg-green-50"
-                      onClick={addSpace}>
-                      Add Space / Next Word
-                    </Button>
-                    <Button size="sm" variant="outline"
-                      className="border-red-500 text-red-500 hover:bg-red-50"
-                      onClick={clearWord}>
-                       Clear Word
-                    </Button>
-                  </div>
+                  <div className="border-t border-gray-100" />
 
                   {/* Sentence */}
-                  <div>
-                    <p className="text-xs uppercase tracking-widest text-gray-400 mb-1">Sentence</p>
-                    <div className="bg-white border border-blue-300 rounded-lg px-4 py-3 min-h-[48px] shadow-sm">
-                      <p className="text-blue-600 text-sm leading-relaxed break-words">
-                        {sentence || <span className="text-gray-600 italic">(empty)</span>}
-                      </p>
+                  <div className="space-y-2">
+                    <span className="text-xs font-semibold uppercase tracking-widest text-gray-400">Full Sentence</span>
+                    <div className="rounded-xl border-2 border-blue-200 bg-blue-50/50 px-4 py-3 min-h-[72px] shadow-inner">
+                      {sentence
+                        ? <p className="text-gray-800 text-sm leading-relaxed break-words font-medium">{sentence}</p>
+                        : <p className="text-blue-300 italic text-sm">Your sentence will appear here...</p>
+                      }
                     </div>
                   </div>
 
-                  {/* Sentence buttons */}
-                  <div className="flex gap-2 flex-wrap">
-                    <Button size="sm"
-                      className="bg-gradient-to-r from-green-600 to-emerald-600 hover:opacity-90 text-white"
-                      onClick={speakSentence}>
-                      🔊 Speak
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={copySentence}>
-                      📋 Copy
-                    </Button>
-                    <Button size="sm" variant="destructive" onClick={clearAll}>
-                      🗑 Clear All
-                    </Button>
+                  {/* Sentence actions */}
+                  <div className="grid grid-cols-3 gap-2">
+                    <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+                      onClick={speakSentence}
+                      className="flex flex-col items-center gap-1.5 py-3 rounded-xl bg-gradient-to-b from-indigo-50 to-indigo-100 border border-indigo-200 text-indigo-700 hover:from-indigo-100 hover:to-indigo-200 transition-all shadow-sm">
+                      <Volume2 className="w-4 h-4" />
+                      <span className="text-xs font-semibold">Speak</span>
+                    </motion.button>
+                    <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+                      onClick={copySentence}
+                      className="flex flex-col items-center gap-1.5 py-3 rounded-xl bg-gradient-to-b from-slate-50 to-slate-100 border border-slate-200 text-slate-700 hover:from-slate-100 hover:to-slate-200 transition-all shadow-sm">
+                      <Copy className="w-4 h-4" />
+                      <span className="text-xs font-semibold">Copy</span>
+                    </motion.button>
+                    <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+                      onClick={clearAll}
+                      className="flex flex-col items-center gap-1.5 py-3 rounded-xl bg-gradient-to-b from-red-50 to-red-100 border border-red-200 text-red-600 hover:from-red-100 hover:to-red-200 transition-all shadow-sm">
+                      <Trash2 className="w-4 h-4" />
+                      <span className="text-xs font-semibold">Clear All</span>
+                    </motion.button>
+                  </div>
+
+                  <div className="border-t border-gray-100" />
+
+                  {/* Keyboard shortcuts */}
+                  <div className="space-y-2">
+                    <span className="text-xs font-semibold uppercase tracking-widest text-gray-400">Keyboard Shortcuts</span>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {[
+                        { key: '⌫', label: 'Delete letter' },
+                        { key: '↵', label: 'Next word' },
+                        { key: 'Esc', label: 'Clear all' },
+                      ].map(({ key, label }) => (
+                        <div key={key} className="flex flex-col items-center gap-1 rounded-lg bg-gray-50 border border-gray-200 py-2 px-1">
+                          <kbd className="text-xs font-bold text-gray-700 bg-white border border-gray-300 rounded px-1.5 py-0.5 shadow-sm">{key}</kbd>
+                          <span className="text-[10px] text-gray-400 text-center leading-tight">{label}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
                 </CardContent>
@@ -543,21 +598,21 @@ export function SignToText() {
             </div>
           </div>
 
-          {/* ── TIPS — full width below both columns ── */}
+          {/* ── Tips ── */}
           <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200 shadow-lg">
             <CardContent className="pt-4 pb-4">
               <h3 className="font-semibold text-blue-900 flex items-center gap-2 mb-3">
-                <Sparkles className="w-4 h-4" />
+                <Sparkles className="w-4 h-4 text-purple-600" />
                 Tips for Better Recognition
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {[
                   { icon: '💡', text: 'Ensure good lighting' },
-                  { icon: '🖐️', text: 'Keep hands visible in frame' },
-                  { icon: '⏱️', text: 'Hold each sign for ~1 second' },
+                  { icon: '🖐️', text: 'Keep hand visible in frame' },
+                  { icon: '⏱️', text: 'Hold each sign ~1 second' },
                   { icon: '🎨', text: 'Use a plain background' },
                 ].map((tip, i) => (
-                  <div key={i} className="flex items-start gap-2 bg-white/60 rounded-lg px-3 py-2 border border-blue-100">
+                  <div key={i} className="flex items-start gap-2 bg-white/70 rounded-lg px-3 py-2 border border-blue-100 shadow-sm">
                     <span className="text-base leading-none mt-0.5">{tip.icon}</span>
                     <p className="text-xs text-blue-800 leading-snug">{tip.text}</p>
                   </div>
@@ -571,3 +626,4 @@ export function SignToText() {
     </div>
   );
 }
+

@@ -100,8 +100,9 @@ export function Profile() {
       toast.error('Please enter your current password');
       return;
     }
-    if (passwordData.newPassword.length < 6) {
-      toast.error('Password must be at least 6 characters');
+    const pw = passwordData.newPassword;
+    if (pw.length < 8 || !/[A-Z]/.test(pw) || !/[0-9]/.test(pw) || !/[^A-Za-z0-9]/.test(pw)) {
+      toast.error('Password does not meet the requirements');
       return;
     }
     if (passwordData.newPassword !== passwordData.confirmPassword) {
@@ -292,11 +293,14 @@ export function Profile() {
                               className={isEditing ? 'border-blue-300' : ''} />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="email">Email</Label>
+                            <Label htmlFor="email" className="flex items-center gap-1">
+                              Email
+                              <Lock className="w-3 h-3 text-gray-400" />
+                            </Label>
                             <Input id="email" type="email" value={profile.email}
-                              onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-                              disabled={!isEditing}
-                              className={isEditing ? 'border-blue-300' : ''} />
+                              disabled
+                              className="bg-gray-50 text-gray-500 cursor-not-allowed" />
+                            <p className="text-xs text-gray-400">Email address cannot be changed</p>
                           </div>
                         </div>
                         <div className="space-y-2">
@@ -436,7 +440,7 @@ export function Profile() {
                                 <Input
                                   id="newPassword"
                                   type={showPasswords ? 'text' : 'password'}
-                                  placeholder="Enter new password"
+                                  placeholder="Min 8 chars, A-Z, 0-9, special char"
                                   value={passwordData.newPassword}
                                   onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
                                   className="pl-10 pr-10 border-blue-300"
@@ -448,6 +452,20 @@ export function Profile() {
                                 >
                                   {showPasswords ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                 </button>
+                              </div>
+                              {/* Password requirements checklist */}
+                              <div className="space-y-1 pt-1">
+                                {[
+                                  { met: passwordData.newPassword.length >= 8, label: 'At least 8 characters' },
+                                  { met: /[A-Z]/.test(passwordData.newPassword), label: 'One uppercase letter (A-Z)' },
+                                  { met: /[0-9]/.test(passwordData.newPassword), label: 'One digit (0–9)' },
+                                  { met: /[^A-Za-z0-9]/.test(passwordData.newPassword), label: 'One special character (!@#$…)' },
+                                ].map(({ met, label }) => (
+                                  <p key={label} className={`flex items-center gap-1 text-xs ${met ? 'text-green-600' : 'text-gray-400'}`}>
+                                    <span className="font-bold">{met ? '✓' : '○'}</span>
+                                    {label}
+                                  </p>
+                                ))}
                               </div>
                             </div>
 
@@ -620,7 +638,7 @@ export function Profile() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-red-600">
                       <AlertTriangle className="w-5 h-5" />
-                      Danger Zone
+                      Alert
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
