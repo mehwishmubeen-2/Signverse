@@ -4,8 +4,6 @@ from pydantic import BaseModel, EmailStr
 from app.db.supabase import supabase, supabase_admin
 
 router = APIRouter()
-
-
 class AuthRequest(BaseModel):
     email: EmailStr
     password: str

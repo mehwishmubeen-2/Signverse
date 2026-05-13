@@ -1,4 +1,4 @@
-// Mock data for sign language dictionary
+// Mock data for sign language dictionary used in dashboard favourite 
 export interface SignData {
   id: string;
   word: string;
